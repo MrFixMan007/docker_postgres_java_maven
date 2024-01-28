@@ -1,0 +1,44 @@
+services:
+  postgres_db:
+    container_name: postgres
+    image: postgres:latest
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=root
+      - POSTGRES_DB=postgres
+    expose:
+      - 5432
+    networks:
+      - spring-postgres
+      - pgadmin-bd
+    restart: always
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  pgadmin:
+    container_name: pgadmin
+    image: dpage/pgadmin4:latest
+    depends_on:
+      - postgres_db
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=lol@gmail.com
+      - PGADMIN_DEFAULT_PASSWORD=12345
+    networks:
+      - pgadmin-bd
+    ports:
+      - "5050:80"
+    restart: always
+
+  app:
+    build: ./
+    depends_on:
+      - postgres_db
+    container_name: 'java-app'
+    networks:
+      - spring-postgres
+    ports:
+      - "8080:8080"
+
+networks:
+  spring-postgres:
+  pgadmin-bd:
